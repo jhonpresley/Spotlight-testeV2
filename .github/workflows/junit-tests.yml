@@ -1,0 +1,41 @@
+name: JUnit Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # A disposable MySQL for this job only - matches the recognitiondb_test
+    # schema/credentials application-test.properties already expects, so
+    # @ActiveProfiles("test") integration tests work here with no extra setup.
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 141512
+          MYSQL_DATABASE: recognitiondb_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - run: ./mvnw -B test
+        env:
+          MYSQL_USERNAME: root
+          MYSQL_PASSWORD: 141512

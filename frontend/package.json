@@ -1,0 +1,27 @@
+{
+  "name": "spotlight-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "smoke": "node scripts/smoke.mjs",
+    "check": "node scripts/assert.mjs",
+    "spacing": "node scripts/spacecheck.mjs",
+    "db:reset": "node scripts/reset-db.mjs",
+    "e2e": "npm run build && playwright test \"e2e/[^/]+\\.spec\\.js$\"",
+    "uat": "npm run build && playwright test e2e/uat"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^30.0.1",
+    "vite": "^5.4.11"
+  }
+}

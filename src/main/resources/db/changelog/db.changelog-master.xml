@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <include file="db/changelog/001-create-nominations-table.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/002-create-nomination-ai-flags-table.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/003-create-nomination-audit-log-table.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/004-add-ai-evaluation-columns.xml" relativeToChangelogFile="false"/>
+
+    <!-- Demo data. Tagged context="demo", which application.properties turns on by
+         default so a fresh clone has a populated dashboard instead of an empty one.
+         Drop spring.liquibase.contexts to get schema without seed rows. -->
+    <include file="db/changelog/005-seed-demo-nominations.xml" relativeToChangelogFile="false"/>
+
+    <!-- Flags gain a reason and a source (RULE vs AI) - see the changeset comments. -->
+    <include file="db/changelog/006-add-flag-source-and-reason.xml" relativeToChangelogFile="false"/>
+
+    <!-- The five business categories a nomination is filed under. -->
+    <include file="db/changelog/007-add-award-category.xml" relativeToChangelogFile="false"/>
+
+    <!-- Audit entries gain a coordinator note and the message that was generated. -->
+    <include file="db/changelog/008-add-audit-comment-and-email.xml" relativeToChangelogFile="false"/>
+
+    <!-- Corrects demo data that predated the one-per-quarter rule. -->
+    <include file="db/changelog/009-rebalance-demo-quarters.xml" relativeToChangelogFile="false"/>
+
+    <!-- A decision can generate more than one message, so messages get their own table. -->
+    <include file="db/changelog/010-audit-comms-table.xml" relativeToChangelogFile="false"/>
+
+    <!-- Which of Version 1's six core values the nomination demonstrates. -->
+    <include file="db/changelog/011-add-core-value.xml" relativeToChangelogFile="false"/>
+
+</databaseChangeLog>

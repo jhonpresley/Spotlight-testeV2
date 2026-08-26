@@ -1,0 +1,73 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    # A separate job from JUnit Tests: needs Node + a built frontend + a
+    # running Spring app, a materially heavier pipeline than plain `mvn test`.
+    # This MySQL is a different database (recognitiondb, demo-seeded) from the
+    # JUnit job's recognitiondb_test - the Playwright suite targets the real
+    # built app on :8080, the same way it runs in production, not the test
+    # profile.
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 141512
+          MYSQL_DATABASE: recognitiondb
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build the frontend into Spring's static resources
+        working-directory: frontend
+        run: npm run build
+
+      - name: Install Playwright's Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Start the Spring app in the background
+        env:
+          MYSQL_USERNAME: root
+          MYSQL_PASSWORD: 141512
+        run: |
+          ./mvnw -B spring-boot:run &
+          npx --yes wait-on http://localhost:8080 --timeout 60000
+
+      - name: Run E2E and UAT specs
+        working-directory: frontend
+        run: |
+          npx playwright test "e2e/[^/]+\.spec\.js$"
+          npx playwright test e2e/uat
